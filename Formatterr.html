@@ -67,6 +67,10 @@
             white-space: pre-wrap;
             word-wrap: break-word;
         }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -97,22 +101,29 @@
             <button onclick="generatePost()">Generate Post</button>
         </div>
         <div id="result"></div>
+        <div id="error" class="error"></div>
     </div>
 
     <script>
         async function fetchIpData(ip) {
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const apiUrl = `http://ip-api.com/json/${ip}?fields=query,status,country,countryCode,isp,mobile,proxy,hosting`;
             try {
-                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-                const apiUrl = `http://ip-api.com/json/${ip}?fields=query,status,country,countryCode,isp,mobile,proxy,hosting`;
-                const response = await fetch(proxyUrl + apiUrl);
+                const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return response.json();
+                const data = await response.json();
+                return JSON.parse(data.contents);
             } catch (error) {
                 console.error('Error fetching IP data:', error);
                 return { status: 'fail', message: 'Error fetching IP data' };
             }
+        }
+
+        function validateIp(ip) {
+            const ipPattern = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
+            return ipPattern.test(ip);
         }
 
         async function generatePost() {
@@ -127,7 +138,18 @@
                 return;
             }
 
+            if (!validateIp(ipAddress)) {
+                document.getElementById('error').innerText = 'Invalid IP address format.';
+                return;
+            }
+
+            document.getElementById('error').innerText = '';
             const ipData = await fetchIpData(ipAddress);
+            if (!ipData || ipData.status === 'fail') {
+                document.getElementById('error').innerText = 'Error fetching IP data';
+                return;
+            }
+
             const formattedIpData = JSON.stringify(ipData, null, 4);
 
             const formattedPost = `
