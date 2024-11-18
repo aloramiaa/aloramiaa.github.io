@@ -106,27 +106,32 @@
 
     <script>
         async function fetchIpData(ip) {
-            const proxyUrl = 'https://proxy.cors.sh/';
-            const apiUrl = `http://ip-api.com/json/${ip}?fields=query,status,country,countryCode,isp,mobile,proxy,hosting`;
+    const proxyUrl = 'https://cors-anywhere.p.rapidapi.com/';
+    const targetUrl = `http://ip-api.com/json/${ip}?fields=query,status,country,countryCode,isp,mobile,proxy,hosting`;
 
-            try {
-                const response = await fetch(proxyUrl + apiUrl, {
-                    headers: {
-                        'x-cors-api-key': 'temp_cbdb3f2a962c9ac93b108b0d715029aa',
-                    },
-                });
+    try {
+        const response = await fetch(`${proxyUrl}?url=${encodeURIComponent(targetUrl)}`, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-host': 'cors-anywhere.p.rapidapi.com',
+                'x-rapidapi-key': 'c70ed3834bmsh65b85228a2c17e5p166a79jsnd128b7e31f65', // Replace with your RapidAPI key
+                'Content-Type': 'application/json',
+            },
+        });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Error fetching IP data:', error);
-                return { status: 'fail', message: 'Error fetching IP data' };
-            }
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching IP data:', error);
+        return { status: 'fail', message: 'Error fetching IP data' };
+    }
+}
+
+
 
         function validateIp(ip) {
             const ipPattern = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
